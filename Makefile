@@ -85,7 +85,7 @@ check-code: format check-lint check-type  ## CI: Run all code checks (format, li
 
 lint:  ## CI: Lint code
 	@printf "$(GREEN)Linting the code...$(NC)\n"
-	@$(POETRY_CMD) run ruff $(SRC_DIR) $(TEST_DIR)
+	@$(POETRY_CMD) run ruff check $(SRC_DIR) $(TEST_DIR)
 	@printf "$(GREEN)Completed linting.$(NC)\n"
 
 format:  ## CI: Format code

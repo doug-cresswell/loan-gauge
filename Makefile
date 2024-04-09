@@ -101,7 +101,7 @@ format:  ## CI: Format code
 
 check-docstrings:  ## CI:  Check the project's Python docstrings for compliance with PEP 257
 	@printf "$(GREEN)Checking docstrings for compliance with PEP 257...$(NC)\n"
-	@pydocstyle $(SRC_DIR) $(TEST_DIR)
+	@$(POETRY_CMD) run pydocstyle $(SRC_DIR) $(TEST_DIR)
 	@printf "$(GREEN)Completed docstring checks.$(NC)\n"
 
 check-lint:  ## CI: Check code linting

@@ -43,22 +43,13 @@ help: ## Display this help screen
 # ========================
 .PHONY: install
 
-install: ## Create venv and install project using `poetry install`
-	@echo "Creating and activating the virtual environment..."
-	$(PYTHON) -m venv $(VENV)
-	@chmod -R +x .venv
-	@echo "Activating the virtual environment..."
-	@echo "Run 'deactivate' to exit the virtual environment."
-	@echo "Setting up the virtual environment and installing dependencies"
+install: ## Install project using `poetry install` and set up pre-commit hooks
+	@echo "Setting up the project environment and installing dependencies..."
 	@poetry install
-	@touch .venv # Ensure .venv modified date more recent than requirements to avoid accidental rebuilds.
-	@echo "Installing pre-commit"
-	@poetry run pre-commit install && poetry run pre-commit autoupdate
-	@echo "Running pre-commit for the first time"
+	@echo "Installing pre-commit hooks..."
+	@poetry run pre-commit install && poetry run pre-commit install -t pre-push && poetry run pre-commit autoupdate
+	@echo "Running pre-commit for the first time..."
 	@poetry run pre-commit run --all-files
-	@echo '#!/bin/bash' > .git/hooks/pre-push
-	@echo 'poetry run pre-commit run --all-files' >> .git/hooks/pre-push
-
 
 
 

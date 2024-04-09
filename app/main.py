@@ -1,27 +1,52 @@
+import dash
+import dash_table
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+import plotly.graph_objs as go
 import pandas as pd
-import plotly.express as px
-from dash import Dash, Input, Output, callback, dcc, html
+from mortgage import monthly_payments
 
-df = pd.read_csv(
-    "https://raw.githubusercontent.com/plotly/datasets/master/gapminder_unfiltered.csv"
-)
+# Create dataset of mortgage monthly payments
+df_payments = monthly_payments()
 
-app = Dash(__name__)
+app = dash.Dash(__name__)
 
 app.layout = html.Div(
-    [
-        html.H1(children="Title of Dash App", style={"textAlign": "center"}),
-        dcc.Dropdown(df.country.unique(), "Canada", id="dropdown-selection"),
-        dcc.Graph(id="graph-content"),
+    children=[
+        html.H1(children="Mortgage Payments Overview"),
+        dcc.Graph(
+            id="mortgage-stacked-area",
+            figure={
+                "data": [
+                    go.Scatter(
+                        x=df_payments["Month"],
+                        y=df_payments["Principal Paid"],
+                        stackgroup="one",
+                        name="Principal Paid",
+                    ),
+                    go.Scatter(
+                        x=df_payments["Month"],
+                        y=df_payments["Interest Paid"],
+                        stackgroup="one",
+                        name="Interest Paid",
+                    ),
+                ],
+                "layout": go.Layout(
+                    title="Mortgage Payments (Principal vs Interest)",
+                    xaxis={"title": "Month"},
+                    yaxis={"title": "Amount Paid"},
+                ),
+            },
+        ),
+        html.H2(children="Payment Details"),
+        dash_table.DataTable(
+            id="table",
+            columns=[{"name": i, "id": i} for i in df_payments.columns],
+            data=df_payments.to_dict("records"),
+        ),
     ]
 )
 
-
-@callback(Output("graph-content", "figure"), Input("dropdown-selection", "value"))
-def update_graph(value):
-    dff = df[df.country == value]
-    return px.line(dff, x="year", y="pop")
-
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run_server(debug=True)

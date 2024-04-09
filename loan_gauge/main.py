@@ -10,9 +10,6 @@ towards reducing the principal over the term of the mortgage.
 """
 
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
-import dash_table
 import plotly.graph_objs as go
 from mortgage import generate_mortgage_schedule
 
@@ -23,10 +20,10 @@ df_payments = generate_mortgage_schedule(
 
 app = dash.Dash(__name__)
 
-app.layout = html.Div(
+app.layout = dash.html.Div(
     children=[
-        html.H1(children="Mortgage Payments Overview"),
-        dcc.Graph(
+        dash.html.H1(children="Mortgage Payments Overview"),
+        dash.dcc.Graph(
             id="mortgage-stacked-area",
             figure={
                 "data": [
@@ -50,8 +47,8 @@ app.layout = html.Div(
                 ),
             },
         ),
-        html.H2(children="Payment Details"),
-        dash_table.DataTable(
+        dash.html.H2(children="Payment Details"),
+        dash.dash_table.DataTable(
             id="table",
             columns=[{"name": i, "id": i} for i in df_payments.columns],
             data=df_payments.to_dict("records"),

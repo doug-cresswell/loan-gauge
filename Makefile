@@ -14,6 +14,7 @@ TEST_DIR := tests
 BUILD_DIR := build
 DOCS_DIR := docs
 DIST_DIR := dist
+SCRIPT_DIR := scripts
 COVERAGE_REPORT := htmlcov
 
 # Variables
@@ -39,8 +40,12 @@ help: ## Display this help screen
 # ========================
 .PHONY: install
 install: ## Install project using `poetry install` and set up pre-commit hooks
+	@printf "Ensuring expected directories exist...\n"
+	@mkdir -p ${SRC_DIR} ${TEST_DIR} ${SCRIPT_DIR}
 	@printf "$(GREEN)Setting up the project environment and installing dependencies...$(NC)\n"
 	@$(POETRY_CMD) install
+	@printf "Installing type stubs for mypy\n"
+	@$(POETRY_CMD) run mypy --install-types --non-interactive
 	@printf "$(GREEN)Installing pre-commit hooks...$(NC)\n"
 	@$(PRE_COMMIT_CMD) install && $(PRE_COMMIT_CMD) install -t pre-push && $(PRE_COMMIT_CMD) autoupdate
 	@printf "$(GREEN)Running pre-commit for the first time...$(NC)\n"

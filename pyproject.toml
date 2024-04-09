@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "loan-gauge"
+name = "loan_gauge"
 version = "0.1.0"
 description = ""
 authors = ["Doug Cresswell <104023005+doug-cresswell@users.noreply.github.com>"]

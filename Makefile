@@ -9,7 +9,7 @@ PWD := $(realpath $(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
 
 # Directories
 WORKTREE_ROOT := $(shell git rev-parse --show-toplevel 2> /dev/null)
-SRC_DIR := app
+SRC_DIR := loan_gauge
 TEST_DIR := tests
 BUILD_DIR := build
 DOCS_DIR := docs
@@ -17,7 +17,7 @@ DIST_DIR := dist
 COVERAGE_REPORT := htmlcov
 
 # Variables
-PROJECT_NAME := app
+PROJECT_NAME := loan_gauge
 POETRY_CMD := poetry
 PRE_COMMIT_CMD := $(POETRY_CMD) run pre-commit
 

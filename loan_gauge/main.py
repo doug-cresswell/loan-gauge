@@ -10,12 +10,10 @@ towards reducing the principal over the term of the mortgage.
 """
 
 import dash
-import dash_table
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+import dash_table
 import plotly.graph_objs as go
-import pandas as pd
 from mortgage import generate_mortgage_schedule
 
 # Create dataset of mortgage monthly payments

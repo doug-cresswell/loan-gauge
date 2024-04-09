@@ -10,15 +10,15 @@ Functions:
         DataFrame containing the mortgage schedule.
 """
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def generate_mortgage_schedule(
     principal: float, annual_interest_rate: float, years: int
 ) -> pd.DataFrame:
     """
-    Generates a DataFrame representing the mortgage payment schedule over time.
+    Generate a DataFrame representing the mortgage payment schedule over time.
 
     Given a principal loan amount, an annual interest rate, and the loan term in years,
     this function calculates the monthly payment, interest paid, principal paid, and
@@ -33,7 +33,6 @@ def generate_mortgage_schedule(
         pd.DataFrame: A DataFrame with columns for each month's payment amount towards
             principal, interest, the remaining balance, and the cumulative amount paid.
     """
-
     monthly_interest_rate = annual_interest_rate / 12
     n_payments = years * 12
 

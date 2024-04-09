@@ -7,6 +7,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+plotly = "^5.20.0"
+dash = "^2.16.1"
+flask = "^3.0.3"
+gunicorn = "^21.2.0"
 
 
 [build-system]

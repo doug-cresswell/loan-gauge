@@ -80,7 +80,7 @@ uninstall: clean clean-docker  ## Uninstall: Clean everything INCLUDING docker i
 # ========================
 # Linting and Formatting
 # ========================
-.PHONY: lint format check-lint check-type check-code check-pre-commit
+.PHONY: lint format check-docstrings check-lint check-type check-code check-pre-commit
 check-code: format check-lint check-type  ## CI: Run all code checks (format, lint, & type checks)
 
 lint:  ## CI: Lint code
@@ -93,6 +93,11 @@ format:  ## CI: Format code
 	@$(POETRY_CMD) run ruff format $(SRC_DIR) $(TEST_DIR) scripts
 	@$(POETRY_CMD) run isort $(SRC_DIR) $(TEST_DIR) scripts
 	@printf "$(GREEN)Completed formatting.$(NC)\n"
+
+check-docstrings:  ## CI:  Check the project's Python docstrings for compliance with PEP 257
+	@printf "$(GREEN)Checking docstrings for compliance with PEP 257...$(NC)\n"
+	@pydocstyle $(SRC_DIR) $(TEST_DIR)
+	@printf "$(GREEN)Completed docstring checks.$(NC)\n"
 
 check-lint:  ## CI: Check code linting
 	@printf "$(GREEN)Checking code linting...$(NC)\n"

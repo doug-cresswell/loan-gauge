@@ -18,10 +18,6 @@ COVERAGE_REPORT := htmlcov
 
 # Variables
 PROJECT_NAME := app
-# Python virtual environment
-VENV := .venv
-VENV_ACTIVATE := $(VENV)/bin/activate
-PYTHON = $$(if [ -d ${PWD}/'.venv' ]; then echo ${PWD}/".venv/bin/python3"; else echo "python3"; fi)
 
 # Coverage settings
 COVERAGE := coverage
@@ -56,9 +52,9 @@ install: ## Install project using `poetry install` and set up pre-commit hooks
 # ========================
 # Clean
 # ========================
-.PHONY: clean clean-docker clean-pybuild clean-test clean-venv uninstall
+.PHONY: clean clean-docker clean-pybuild clean-test uninstall
 
-clean: clean-pybuild clean-test  ## Clean:  Everything EXCEPT docker images and venv
+clean: clean-pybuild clean-test  ## Clean:  Everything EXCEPT docker images
 	@echo "All temporary files cleaned"
 
 
@@ -86,18 +82,13 @@ clean-test:  ## Clean:  Test artefacts
 	poetry run ruff clean
 
 
-clean-venv:  ## Clean:  Virtual environment
-	@echo "Deleting virtual environment"
-	rm -rf $(VENV)
 
-
-uninstall:  ## Uninstall:  Clean everything INCLUDING docker images and venv
+uninstall:  ## Uninstall:  Clean everything INCLUDING docker images
 	@echo " Running uninstall - this will reset everything to pre-installation state"
-	@echo "WARNING: `poetry.lock`, virtual environment (venv) & docker images will be DELETED"
+	@echo "WARNING: `poetry.lock` & docker images will be DELETED"
 	@sleep 3
 	@make clean
 	@make clean-docker
-	@make clean-venv
 
 
 
@@ -183,7 +174,6 @@ docker-build:  ## Docker: Build image (set target like `make docker-build TARGET
 	docker build --target $(TARGET) --label $(PROJECT_LABEL) -t $(DOCKER_IMAGE):$(TARGET) -f Dockerfile .
 
 
-# Note: Avoid overwriting the container's .venv by mounting entire working directory
 # Add more volumes as you need, e.g. docs for doctest / mkdocs
 docker-unit-test: docker-build  ## Docker: Unit tests in docker development image
 	@echo "Running unit tests in docker container..."

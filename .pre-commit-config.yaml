@@ -1,8 +1,43 @@
+---
+# https://pre-commit.com/
+default_stages: [pre-merge-commit, pre-push, pre-rebase]
+exclude: .vscode/
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1  # Use the latest revision
-    hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-yaml
-    -   id: check-added-large-files
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.5.0
+      hooks:
+          - id: check-yaml
+          - id: end-of-file-fixer
+          - id: trailing-whitespace
+          - id: check-json
+          - id: pretty-format-json
+          - id: check-added-large-files
+          - id: check-merge-conflict
+          - id: check-toml
+          - id: check-yaml
+          - id: trailing-whitespace
+    - repo: https://github.com/pre-commit/mirrors-mypy
+      rev: v1.8.0
+      hooks:
+          - id: mypy
+    - repo: https://github.com/adrienverge/yamllint
+      rev: v1.35.1
+      hooks:
+          - id: yamllint
+    - repo: https://github.com/PyCQA/pydocstyle
+      rev: 6.3.0
+      hooks:
+          - id: pydocstyle
+    - repo: https://github.com/PyCQA/isort
+      rev: 5.13.2
+      hooks:
+          - id: isort
+            args: ["--profile", "black"]
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      rev: v0.2.2
+      hooks:
+          # Run the formatter.
+          - id: ruff-format
+          # Run the linter.
+          - id: ruff
+            args: [--fix]

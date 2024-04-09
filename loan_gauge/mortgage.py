@@ -11,6 +11,7 @@ Functions:
 """
 
 import numpy as np
+import numpy_financial as npf
 import pandas as pd
 
 
@@ -37,16 +38,16 @@ def generate_mortgage_schedule(
     n_payments = years * 12
 
     # Monthly mortgage payment (fixed-rate)
-    monthly_payment = np.pmt(monthly_interest_rate, n_payments, -principal)
+    monthly_payment = npf.pmt(monthly_interest_rate, n_payments, -principal)
 
     # Months
     months = np.arange(1, n_payments + 1)
 
     # Interest Paid Each Month
-    interest_paid = np.ipmt(monthly_interest_rate, months, n_payments, -principal)
+    interest_paid = npf.ipmt(monthly_interest_rate, months, n_payments, -principal)
 
     # Principal Paid Each Month
-    principal_paid = np.ppmt(monthly_interest_rate, months, n_payments, -principal)
+    principal_paid = npf.ppmt(monthly_interest_rate, months, n_payments, -principal)
 
     # Cumulative Principal Paid
     cumulative_principal_paid = np.cumsum(principal_paid)

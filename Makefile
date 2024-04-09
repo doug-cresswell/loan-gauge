@@ -18,11 +18,13 @@ COVERAGE_REPORT := htmlcov
 
 # Variables
 PROJECT_NAME := app
+POETRY_CMD := poetry
+PRE_COMMIT_CMD := $(POETRY_CMD) run pre-commit
 
-# Coverage settings
-COVERAGE := coverage
-
-
+# Colors
+YELLOW := \033[33m
+GREEN := \033[32m
+NC := \033[0m # No Color
 
 # ========================
 # HELP
@@ -30,183 +32,90 @@ COVERAGE := coverage
 .DEFAULT_GOAL := help
 .PHONY: help
 help: ## Display this help screen
-	@grep -E '^[a-z.A-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
-
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(YELLOW)%-30s$(NC) %s\n", $$1, $$2}'
 
 # ========================
 # Project Install
 # ========================
 .PHONY: install
-
 install: ## Install project using `poetry install` and set up pre-commit hooks
-	@echo "Setting up the project environment and installing dependencies..."
-	@poetry install
-	@echo "Installing pre-commit hooks..."
-	@poetry run pre-commit install && poetry run pre-commit install -t pre-push && poetry run pre-commit autoupdate
-	@echo "Running pre-commit for the first time..."
-	@poetry run pre-commit run --all-files
-
-
+	@printf "$(GREEN)Setting up the project environment and installing dependencies...$(NC)\n"
+	@$(POETRY_CMD) install
+	@printf "$(GREEN)Installing pre-commit hooks...$(NC)\n"
+	@$(PRE_COMMIT_CMD) install && $(PRE_COMMIT_CMD) install -t pre-push && $(PRE_COMMIT_CMD) autoupdate
+	@printf "$(GREEN)Running pre-commit for the first time...$(NC)\n"
+	@$(PRE_COMMIT_CMD) run --all-files
 
 # ========================
 # Clean
 # ========================
-.PHONY: clean clean-docker clean-pybuild clean-test uninstall
-
-clean: clean-pybuild clean-test  ## Clean:  Everything EXCEPT docker images
-	@echo "All temporary files cleaned"
-
+.PHONY: clean clean-docker clean-pybuild clean-test clean-venv uninstall
+clean: clean-pybuild clean-test  ## Clean: Everything EXCEPT docker images
+	@printf "$(GREEN)All temporary files cleaned.$(NC)\n"
 
 clean-docker:
-	@echo "Removing all Docker containers for $(PROJECT_NAME)..."
-	docker rm -f $$(docker ps -a -q --filter "label=project=$(PROJECT_NAME)") || true
-	@echo "Removing all Docker images for $(PROJECT_NAME)..."
-	docker rmi -f $$(docker images -a -q --filter "label=project=$(PROJECT_NAME)") || true
-	@echo "Remove all dangling images"
-	docker image prune -f
+	@printf "$(GREEN)Removing all Docker containers and images for $(PROJECT_NAME)...$(NC)\n"
+	@docker rm -f $$(docker ps -a -q --filter "label=project=$(PROJECT_NAME)") || true
+	@docker rmi -f $$(docker images -a -q --filter "label=project=$(PROJECT_NAME)") || true
+	@printf "$(GREEN)Remove all dangling images...$(NC)\n"
+	@docker image prune -f
 
+clean-pybuild:  ## Clean: Python temp files
+	@printf "$(GREEN)Removing Python build artifacts...$(NC)\n"
+	@rm -rf $(BUILD_DIR) $(DIST_DIR)
+	@find "${PWD}" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	@find "${PWD}" -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	@find "${PWD}" -type f -name "*.pyc" -exec rm -f {} + 2>/dev/null || true
 
-clean-pybuild:  ## Clean:  Python temp files
-	@echo "Removing Python build artifacts"
-	rm -rf $(BUILD_DIR) $(DIST_DIR)
-	find "${PWD}" -type d -name "__pycache__" -exec rm -rf {} \; 2>/dev/null || true
-	find "${PWD}" -type d -name "*.egg-info" -exec rm -rf {} \; 2>/dev/null || true
-	find "${PWD}" -type f -name "*.pyc" -exec rm -f {} \; 2>/dev/null || true
+clean-test:  ## Clean: Test artifacts
+	@printf "$(GREEN)Removing test artifacts...$(NC)\n"
+	@rm -rf .pytest_cache $(COVERAGE_REPORT) .coverage .mypy_cache
+	@$(POETRY_CMD) run coverage erase
+	@$(POETRY_CMD) run ruff clean
 
-
-clean-test:  ## Clean:  Test artefacts
-	@echo "Removing test artefacts"
-	rm -rf .pytest_cache $(COVERAGE_REPORT) .coverage .mypy_cache
-	poetry run coverage erase
-	poetry run ruff clean
-
-
-
-uninstall:  ## Uninstall:  Clean everything INCLUDING docker images
-	@echo " Running uninstall - this will reset everything to pre-installation state"
-	@echo "WARNING: `poetry.lock` & docker images will be DELETED"
+uninstall: clean clean-docker  ## Uninstall: Clean everything INCLUDING docker images
+	@printf "$(YELLOW)WARNING: This will reset everything to pre-installation state.$(NC)\n"
 	@sleep 3
-	@make clean
-	@make clean-docker
-
-
 
 # ========================
 # Linting and Formatting
 # ========================
 .PHONY: lint format check-lint check-type check-code check-pre-commit
-check-code: format check-lint check-type  ## CI: Run all code checks (check-lint, format & check-pre-commit)
+check-code: format check-lint check-type  ## CI: Run all code checks (format, lint, & type checks)
 
-lint:  ## CI:  Lint code
-	@echo "Linting the code using ruff"
-	poetry run ruff $(SRC_DIR) $(TEST_DIR)
-	@echo "Completed linting"
+lint:  ## CI: Lint code
+	@printf "$(GREEN)Linting the code...$(NC)\n"
+	@$(POETRY_CMD) run ruff $(SRC_DIR) $(TEST_DIR)
+	@printf "$(GREEN)Completed linting.$(NC)\n"
 
+format:  ## CI: Format code
+	@printf "$(GREEN)Formatting the code...$(NC)\n"
+	@$(POETRY_CMD) run ruff format $(SRC_DIR) $(TEST_DIR) scripts
+	@$(POETRY_CMD) run isort $(SRC_DIR) $(TEST_DIR) scripts
+	@printf "$(GREEN)Completed formatting.$(NC)\n"
 
-format:  ## CI:  Format code
-	@echo "Formatting the code using ruff and isort"
-	poetry run ruff format $(SRC_DIR) $(TEST_DIR) scripts
-	poetry run isort $(SRC_DIR) $(TEST_DIR) scripts
-	@echo "Completed formatting"
+check-lint:  ## CI: Check code linting
+	@printf "$(GREEN)Checking code linting...$(NC)\n"
+	@$(POETRY_CMD) run ruff check $(SRC_DIR) $(TEST_DIR)
+	@printf "$(GREEN)Completed lint checks.$(NC)\n"
 
-
-check-lint:  ## CI: Check code static type checker
-	@echo "Checking code linting"
-	poetry run ruff check $(SRC_DIR) $(TEST_DIR)
-	@echo "Completed lint checks"
-
-
-check-type:  ## CI: Check code linting
-	@echo "Checking types"
-	poetry run mypy $(SRC_DIR) $(TEST_DIR)
-	@echo "Completed type checks"
-
+check-type:  ## CI: Check code static typing
+	@printf "$(GREEN)Checking types...$(NC)\n"
+	@$(POETRY_CMD) run mypy $(SRC_DIR) $(TEST_DIR)
+	@printf "$(GREEN)Completed type checks.$(NC)\n"
 
 check-pre-commit:  ## CI: Run pre-commit checks on all files
-	@echo "Running pre-commit"
-	poetry run pre-commit run --all-files
-
-
+	@printf "$(GREEN)Running pre-commit...$(NC)\n"
+	@$(PRE_COMMIT_CMD) run --all-files
 
 # ========================
 # Unit Tests and Coverage
 # ========================
 .PHONY: unit-test coverage-html
+unit-test:  ## Test: local unit tests
+	@printf "$(GREEN)Running tests using pytest and coverage...$(NC)\n"
+	@$(POETRY_CMD) run coverage run -m pytest $(TEST_DIR)
 
-unit-test: 	 ## Test:  local unit tests
-	@echo "Running tests using pytest and coverage"
-	poetry run coverage run -m pytest $(TEST_DIR)
-
-
-coverage-html:  ## Test:  Generate html coverage report
-	@echo "Generating HTML coverage report"
-	poetry run coverage html -d $(COVERAGE_REPORT)
-
-
-
-# ========================
-# Documentation Build
-# ========================
-# .PHONY: docs
-# docs:  ## Build documentation with sphinx (to be deprecated in favour of mkdocs)
-# 	@echo "Building documentation"
-# cd $(DOCS_DIR) && make html
-
-
-
-# ========================
-# Docker commands
-# ========================
-.PHONY: docker-build docker-unit-test docker-check-code docker-run
-
-# Docker arguments
-DOCKER_IMAGE := $(PROJECT_NAME)
-DOCKER_TAG_DEV := development
-DOCKER_TAG_PROD := production
-TARGET ?= $(DOCKER_TAG_DEV) ## Default to dev image build target
-PROJECT_LABEL := project=$(PROJECT_NAME)
-
-docker-all: docker-unit-test docker-check-code
-
-docker-build:  ## Docker: Build image (set target like `make docker-build TARGET=development`)
-	@echo "Building Docker image for $(TARGET)..."
-	docker build --target $(TARGET) --label $(PROJECT_LABEL) -t $(DOCKER_IMAGE):$(TARGET) -f Dockerfile .
-
-
-# Add more volumes as you need, e.g. docs for doctest / mkdocs
-docker-unit-test: docker-build  ## Docker: Unit tests in docker development image
-	@echo "Running unit tests in docker container..."
-	docker run --rm \
-	-v $(PWD)/$(PROJECT_NAME):/app/$(PROJECT_NAME) \
-	-v $(PWD)/tests:/app/tests \
-	-v $(PWD)/docs:/app/docs \
-	--label $(PROJECT_LABEL) \
-	$(DOCKER_IMAGE):$(DOCKER_TAG_DEV) make unit-test
-
-
-docker-check-code: docker-build  ## Docker: Code checks in docker development image
-	@echo "Checking code in docker container..."
-	docker run --rm \
-	-v $(PWD)/$(PROJECT_NAME):/app/$(PROJECT_NAME) \
-	-v $(PWD)/tests:/app/tests \
-	-v $(PWD)/docs:/app/docs \
-	--label $(PROJECT_LABEL) \
-	$(DOCKER_IMAGE):$(DOCKER_TAG_DEV) make check-code
-
-
-docker-pre-commit-run:
-	@echo "Setting docker-build TARGET to 'pre-commit'"
-	export TARGET=pre-commit; \
-	$(MAKE) docker-build
-	# TODO: Add docker run to run pre-commit
-
-
-docker-run: docker-build  ## Docker: Interactive terminal in docker development image
-	@echo "Running interactive docker container..."
-	@docker run --rm -it \
-	-v $(PWD)/$(PROJECT_NAME):/app/$(PROJECT_NAME) \
-	-v $(PWD)/tests:/app/tests \
-	-v $(PWD)/docs:/app/docs \
-	--label $(PROJECT_LABEL) \
-	$(DOCKER_IMAGE):$(TARGET) /bin/bash
+coverage-html:  ## Test: Generate HTML coverage report
+	@printf "$(GREEN)Generating HTML coverage report...$(NC)\n"
+	@$(POETRY_CMD) run coverage html -d $(COVERAGE_REPORT)

@@ -1,6 +1,5 @@
 """
-The loan_gauge package provides tools and utilities for analyzing and visualizing loan and
-mortgage payment schedules.
+The loan_gauge package provides tools and utilities for analyzing and visualizing loan and mortgage payment schedules.
 
 Modules:
     mortgage: Contains functions for generating mortgage payment schedules.

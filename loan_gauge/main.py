@@ -58,12 +58,14 @@ app.layout = html.Div(
     Input(component_id="controls-and-radio-item", component_property="value"),
 )
 def update_graph(col_chosen):
+    """Interactive area chart where you can choose the Dataframe column displayed."""
     fig = px.area(df, x="Month", y=col_chosen)
     return fig
 
 
 @app.callback(Output("interest-vs-principal-graph", "figure"), Input("years", "value"))
 def display_area(years):
+    """Display stacked area chart of cumulative interest and principal payments."""
     figure = {
         "data": [
             go.Scatter(

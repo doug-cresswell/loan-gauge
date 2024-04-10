@@ -86,7 +86,7 @@ uninstall: clean clean-docker  ## Uninstall: Clean everything INCLUDING docker i
 # Linting and Formatting
 # ========================
 .PHONY: lint format check-docstrings check-lint check-type check-code check-pre-commit
-check-code: format check-lint check-type  ## CI: Run all code checks (format, lint, & type checks)
+check-code: format check-lint check-docstrings check-type  ## CI: Run all code checks (format, lint, docstring & type checks)
 
 lint:  ## CI: Lint code
 	@printf "$(GREEN)Linting the code...$(NC)\n"

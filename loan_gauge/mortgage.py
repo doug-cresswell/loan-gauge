@@ -40,32 +40,32 @@ def generate_mortgage_schedule(
     # Monthly mortgage payment (fixed-rate)
     monthly_payment = npf.pmt(monthly_interest_rate, n_payments, -principal)
 
-    # Months
     months = np.arange(1, n_payments + 1)
 
-    # Interest Paid Each Month
-    interest_paid = npf.ipmt(monthly_interest_rate, months, n_payments, -principal)
+    # Paid Each Month
+    monthly_interest = npf.ipmt(monthly_interest_rate, months, n_payments, -principal)
+    monthly_principle = npf.ppmt(monthly_interest_rate, months, n_payments, -principal)
 
-    # Principal Paid Each Month
-    principal_paid = npf.ppmt(monthly_interest_rate, months, n_payments, -principal)
-
-    # Cumulative Principal Paid
-    cumulative_principal_paid = np.cumsum(principal_paid)
+    # Cumulative Totals Each Month
+    cumulative_interest = np.cumsum(monthly_interest)
+    cumulative_principal = np.cumsum(monthly_principle)
+    cumulative_payment = cumulative_interest + cumulative_principal
 
     # Remaining Balance Each Month
-    remaining_balance = principal + cumulative_principal_paid
+    remaining_balance = principal - cumulative_principal
 
     # Creating DataFrame
     df = pd.DataFrame(
         {
+            # TODO: apply np.round to monetary cols
             "Month": months,
-            "Monthly Payment": monthly_payment,
-            "Principal Paid": -principal_paid,  # Negate to make positive
-            "Interest Paid": -interest_paid,  # Negate to make positive
-            "Remaining Balance": remaining_balance,
-            "Total Paid": -(
-                principal_paid + interest_paid
-            ),  # Sum and negate to make positive
+            "Monthly Payment": np.round(monthly_payment, 2),
+            "Monthly Principal": np.round(monthly_principle, 2),
+            "Monthly Interest": np.round(monthly_interest, 2),
+            "Interest Paid": np.round(cumulative_interest),
+            "Principal Paid": np.round(cumulative_principal),
+            "Total Paid": np.round(cumulative_payment, 2),
+            "Remaining Balance": np.round(remaining_balance, 2),
         }
     )
 
